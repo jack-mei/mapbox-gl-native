@@ -322,8 +322,8 @@ test: $(LINUX_BUILD)
 benchmark: $(LINUX_BUILD)
 	$(NINJA) $(NINJA_ARGS) -j$(JOBS) -C $(LINUX_OUTPUT_PATH) mbgl-benchmark
 
-ifneq (,$(shell which gdb))
-  GDB = gdb -batch -return-child-result -ex 'set print thread-events off' -ex 'run' -ex 'thread apply all bt' --args
+ifeq ($(GDB), 1)
+  GDB = gdb -batch -return-child-result -ex 'set follow-fork-mode child' -ex 'set print thread-events off' -ex 'run' -ex 'thread apply all bt' --args
 endif
 
 .PHONY: run-test
