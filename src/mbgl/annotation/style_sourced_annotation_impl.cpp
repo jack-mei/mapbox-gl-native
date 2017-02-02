@@ -3,6 +3,7 @@
 #include <mbgl/style/style.hpp>
 #include <mbgl/style/layer.hpp>
 #include <mbgl/style/layer_impl.hpp>
+#include <mbgl/style/layers/circle_layer.hpp>
 #include <mbgl/style/layers/line_layer.hpp>
 #include <mbgl/style/layers/fill_layer.hpp>
 
@@ -32,6 +33,11 @@ void StyleSourcedAnnotationImpl::updateStyle(Style& style) const {
         std::unique_ptr<Layer> layer = sourceLayer->baseImpl->copy(layerID, AnnotationManager::SourceID);
         layer->as<FillLayer>()->setSourceLayer(layerID);
         layer->as<FillLayer>()->setVisibility(VisibilityType::Visible);
+        style.addLayer(std::move(layer), sourceLayer->getID());
+    } else if (sourceLayer->is<CircleLayer>()) {
+        std::unique_ptr<Layer> layer = sourceLayer->baseImpl->copy(layerID, AnnotationManager::SourceID);
+        layer->as<CircleLayer>()->setSourceLayer(layerID);
+        layer->as<CircleLayer>()->setVisibility(VisibilityType::Visible);
         style.addLayer(std::move(layer), sourceLayer->getID());
     }
 }

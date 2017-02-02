@@ -3,7 +3,9 @@
 
 #include <mbgl/util/default_thread_pool.hpp>
 #include <mbgl/annotation/annotation.hpp>
+#include <mbgl/annotation/annotation_manager.hpp>
 #include <mbgl/sprite/sprite_image.hpp>
+#include <mbgl/style/layers/circle_layer.hpp>
 #include <mbgl/map/map.hpp>
 #include <mbgl/gl/headless_backend.hpp>
 #include <mbgl/gl/offscreen_view.hpp>
@@ -83,6 +85,19 @@ TEST(Annotations, FillAnnotation) {
 
     test.map.setZoom(test.map.getMaxZoom());
     test.checkRendering("fill_annotation_max_zoom");
+}
+
+TEST(Annotations, CircleAnnotation) {
+    AnnotationTest test;
+
+    test.map.setStyleJSON(util::read_file("test/fixtures/api/empty.json"));
+    auto circle = std::make_unique<style::CircleLayer>("circle", AnnotationManager::SourceID);
+    circle->setCircleRadius({ 10.0f });
+    circle->setCircleColor({ *mbgl::Color::parse("black") });
+    test.map.addLayer(std::move(circle));
+
+    test.map.addAnnotation(StyleSourcedAnnotation { Point<double>(0, 0), "circle" });
+    test.checkRendering("circle_annotation");
 }
 
 TEST(Annotations, AntimeridianAnnotationSmall) {

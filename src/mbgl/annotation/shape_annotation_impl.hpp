@@ -34,6 +34,9 @@ public:
 };
 
 struct CloseShapeAnnotation {
+    ShapeAnnotationGeometry operator()(const mbgl::Point<double> &geom) const {
+        return geom;
+    }
     ShapeAnnotationGeometry operator()(const mbgl::LineString<double> &geom) const {
         return geom;
     }

@@ -27,6 +27,7 @@ typedef QList<CoordinatesCollection> CoordinatesCollections;
 // Reflects mbgl::ShapeAnnotationGeometry.
 struct Q_DECL_EXPORT ShapeAnnotationGeometry {
     enum Type {
+        PointType,
         LineStringType,
         PolygonType,
         MultiLineStringType,

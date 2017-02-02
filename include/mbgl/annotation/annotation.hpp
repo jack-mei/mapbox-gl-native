@@ -22,6 +22,7 @@ public:
 };
 
 using ShapeAnnotationGeometry = variant<
+    Point<double>,
     LineString<double>,
     Polygon<double>,
     MultiLineString<double>,
