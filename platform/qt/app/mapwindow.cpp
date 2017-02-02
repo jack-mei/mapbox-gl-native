@@ -258,6 +258,28 @@ void MapWindow::keyPressEvent(QKeyEvent *ev)
             }
         }
         break;
+    case Qt::Key_5: {
+            if (m_styleSourcedAnnotationId.isNull()) {
+                if (!m_map->layerExists("circle")) {
+                    QVariantMap circle;
+                    circle["id"] = "circle";
+                    circle["type"] = "circle";
+                    circle["source"] = "com.mapbox.annotations";
+                    m_map->addLayer(circle);
+
+                    m_map->setPaintProperty("circle", "circle-radius", 10.0);
+                    m_map->setPaintProperty("circle", "circle-color", QColor("black"));
+                }
+                QMapbox::CoordinatesCollections geometry { { { m_map->coordinate() } } };
+                QMapbox::StyleSourcedAnnotation styleSourced { { QMapbox::ShapeAnnotationGeometry::Type::PointType, geometry }, "circle" };
+                m_styleSourcedAnnotationId = m_map->addAnnotation(QVariant::fromValue<QMapbox::StyleSourcedAnnotation>(styleSourced));
+            } else {
+                m_map->removeAnnotation(m_styleSourcedAnnotationId.toUInt());
+                m_styleSourcedAnnotationId.clear();
+            }
+        }
+        break;
+
     case Qt::Key_Tab:
         m_map->cycleDebugOptions();
         break;

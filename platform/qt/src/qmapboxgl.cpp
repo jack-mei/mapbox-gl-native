@@ -837,6 +837,10 @@ void QMapboxGL::setTransitionOptions(qint64 duration, qint64 delay) {
 }
 
 mbgl::ShapeAnnotationGeometry asMapboxGLGeometry(const QMapbox::ShapeAnnotationGeometry &geometry) {
+    auto asMapboxGLPoint = [&](const QMapbox::Coordinate &point) {
+        return mbgl::Point<double> { point.second, point.first };
+    };
+
     auto asMapboxGLLineString = [&](const QMapbox::Coordinates &lineString) {
         mbgl::LineString<double> mbglLineString;
         mbglLineString.reserve(lineString.size());
@@ -880,6 +884,9 @@ mbgl::ShapeAnnotationGeometry asMapboxGLGeometry(const QMapbox::ShapeAnnotationG
 
     mbgl::ShapeAnnotationGeometry result;
     switch (geometry.type) {
+    case QMapbox::ShapeAnnotationGeometry::PointType:
+        result = { asMapboxGLPoint(geometry.geometry.first().first().first()) };
+        break;
     case QMapbox::ShapeAnnotationGeometry::LineStringType:
         result = { asMapboxGLLineString(geometry.geometry.first().first()) };
         break;
