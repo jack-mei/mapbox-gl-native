@@ -282,6 +282,22 @@ struct Converter<CompositeValue<S>> {
     }
 };
 
+    
+template <class T>
+std::enable_if_t<util::Interpolatable<T>, Result<CompositeFunction<T>>> createInterpolatedCompositeFunction (std::string propertyString, std::map<float, ExponentialStops<T>> stops, optional<T> defaultValue) {
+    return CompositeFunction<T>(propertyString, stops, defaultValue);
+}
+    
+template <class T>
+std::enable_if_t<!util::Interpolatable<T>, Result<CompositeFunction<T>>> createInterpolatedCompositeFunction (std::string propertyString, std::map<float, ExponentialStops<T>> stops, optional<T> defaultValue) {
+    (void)propertyString; // is there a better way to handle the unused argument lint error?
+    (void)stops;
+    (void)defaultValue;
+    // is there a good way to include a human-readable name for T in this error message?
+    return Error { "function is not interpolatable" };
+}
+
+
 template <class T>
 struct Converter<CompositeFunction<T>> {
     template <class V>
@@ -289,40 +305,42 @@ struct Converter<CompositeFunction<T>> {
         if (!isObject(value)) {
             return Error { "function must be an object" };
         }
-
+        
         auto propertyValue = objectMember(value, "property");
         if (!propertyValue) {
             return Error { "function must specify property" };
         }
-
+        
         auto propertyString = toString(*propertyValue);
         if (!propertyString) {
             return Error { "function property must be a string" };
         }
-
+        
         auto defaultValue = convertDefaultValue<T>(value);
         if (!defaultValue) {
             return defaultValue.error();
         }
-
+        
         std::string type = "exponential";
         auto typeValue = objectMember(value, "type");
         if (typeValue && toString(*typeValue)) {
             type = *toString(*typeValue);
         }
-
+        
+        
+        
         if (type == "exponential") {
             auto stops = convertStops<CompositeValue<float>, T>(value);
             if (!stops) {
                 return stops.error();
             }
-
+            
             auto base = 1.0f;
             auto baseValue = objectMember(value, "base");
             if (baseValue && toNumber(*baseValue)) {
                 base = *toNumber(*baseValue);
             }
-
+            
             std::map<float, ExponentialStops<T>> convertedStops;
             for (const auto& stop : *stops) {
                 auto& inner = convertedStops[stop.first.first];
@@ -330,32 +348,32 @@ struct Converter<CompositeFunction<T>> {
                 inner.stops.emplace(stop.first.second, stop.second);
             }
 
-            return CompositeFunction<T>(*propertyString, convertedStops, *defaultValue);
+            return createInterpolatedCompositeFunction(*propertyString, convertedStops, *defaultValue);
         } else if (type == "interval") {
             auto stops = convertStops<CompositeValue<float>, T>(value);
             if (!stops) {
                 return stops.error();
             }
-
+            
             std::map<float, IntervalStops<T>> convertedStops;
             for (const auto& stop : *stops) {
                 auto& inner = convertedStops[stop.first.first];
                 inner.stops.emplace(stop.first.second, stop.second);
             }
-
+            
             return CompositeFunction<T>(*propertyString, convertedStops, *defaultValue);
         } else if (type == "categorical") {
             auto stops = convertStops<CompositeValue<CategoricalValue>, T>(value);
             if (!stops) {
                 return stops.error();
             }
-
+            
             std::map<float, CategoricalStops<T>> convertedStops;
             for (const auto& stop : *stops) {
                 auto& inner = convertedStops[stop.first.first];
                 inner.stops.emplace(stop.first.second, stop.second);
             }
-
+            
             return CompositeFunction<T>(*propertyString, convertedStops, *defaultValue);
         } else {
             return Error { "unsupported function type" };
